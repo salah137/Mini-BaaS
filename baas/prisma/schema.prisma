@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  name     String
+  password String
+  apps     App[]
+}
+
+model App {
+  id      Int    @id @default(autoincrement())
+  apikey  String
+  appName String
+  owner   User   @relation(fields: [ownrId], references: [id])
+  ownrId  Int    @unique
+
+  AppUser AppUser[]
+}
+
+model AppUser {
+  id       Int    @id @default(autoincrement())
+  uuid     Int    @unique
+  email    String @unique
+  passwprd String
+  app      App    @relation(fields: [appId], references: [id])
+  appId    Int
+}
+
+model DatabaseElemant {
+  id   Int         @id @default(autoincrement())
+  type elementType
+
+  name String?
+
+  strId Int? @unique
+  str   Str? @relation("ElementStr", fields: [strId], references: [id])
+
+  intId Int?     @unique
+  int   Integer? @relation("ElementInt", fields: [intId], references: [id])
+
+  floatId Int?    @unique
+  float   Floate? @relation("ElementFloat", fields: [floatId], references: [id])
+
+  boolId Int?  @unique
+  bool   Bool? @relation("ElementBool", fields: [boolId], references: [id])
+
+  queryId Int?  @unique
+  query   Query? @relation("ElementQuery", fields: [queryId], references: [id])
+
+  documentId Int?  @unique
+  document   Document? @relation("ElementDocument", fields: [documentId], references: [id])
+
+  parentDoc Document?  @relation("ParentDoc", fields: [parentDocid], references: [id])
+  parentDocid Int?
+
+  parentQueriId Int?
+  parentQueri Query?    @relation("ParentQueri", fields: [parentQueriId], references: [id])
+}
+
+model Str {
+  id    Int    @id @default(autoincrement())
+  value String
+
+  parent DatabaseElemant? @relation("ElementStr")
+}
+
+model Integer {
+  id    Int @id @default(autoincrement())
+  value Int
+
+  parent DatabaseElemant? @relation("ElementInt")
+}
+
+model Floate {
+  id    Int   @id @default(autoincrement())
+  value Float
+
+  parent DatabaseElemant? @relation("ElementFloat")
+}
+
+model Bool {
+  id    Int   @id @default(autoincrement())
+  value Boolean
+
+  parent DatabaseElemant? @relation("ElementBool")
+
+}
+
+model Query {
+  id   Int    @id @default(autoincrement())
+  DatabaseElemant DatabaseElemant ? @relation("ElementQuery")
+  children DatabaseElemant[] @relation("ParentQueri")
+}
+
+model Document{
+    id   Int    @id @default(autoincrement())
+    DatabaseElemant DatabaseElemant? @relation("ElementDocument")
+    children DatabaseElemant[] @relation("ParentDoc")
+}
+
+enum elementType {
+  String
+  Int
+  Float
+  Bool
+  Query
+  Document
+}
