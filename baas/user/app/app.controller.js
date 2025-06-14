@@ -1,4 +1,5 @@
 const express = require("express")
+const utility = require("../../utilities")
 const {createApp, deleteApp, getAllApps} = require("./app.service")
 
 const router = express.Router()
@@ -9,6 +10,6 @@ router.delete("/deleteApp",deleteApp)
 
 router.get("/getApps",getAllApps)
 
-router.use(userMiddlewere)
+router.use(utility.userMiddlewere)
 
 module.exports = router

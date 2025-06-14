@@ -24,7 +24,7 @@ model User {
 
 model App {
   id      Int    @id @default(autoincrement())
-  apikey  String
+  apikey  String @unique
   appName String
   owner   User   @relation(fields: [ownrId], references: [id])
   ownrId  Int    @unique

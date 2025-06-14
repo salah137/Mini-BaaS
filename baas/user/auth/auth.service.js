@@ -2,14 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 const argon = require("argon2");
 const prisma = new PrismaClient()
 const jwt = require("jsonwebtoken")
-
-const validateEmail = (email,) => {
-    return String(email)
-        .toLowerCase()
-        .match(
-            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-        );
-};
+const utility = require("../../utilities")
 
 const signUp = async (req, res) => {
     try {
@@ -19,7 +12,7 @@ const signUp = async (req, res) => {
         const password = req.body.password
         const name = req.body.name
 
-        if (!email || !validateEmail(email)) {
+        if (!email || !utility.validateEmail(email)) {
             return res.status(400).json(
                 {
                     "status": "error",
