@@ -3,6 +3,6 @@ const auth = require("./app.auth/app.auth.controller")
 
 const router = express.Router()
 
-router.use("app",auth)
+router.use("auth",auth)
 
 module.exports = router

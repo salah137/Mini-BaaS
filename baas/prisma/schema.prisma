@@ -28,8 +28,9 @@ model App {
   appName String
   owner   User   @relation(fields: [ownrId], references: [id])
   ownrId  Int    @unique
-
   AppUser AppUser[]
+
+  DatabaseElemant DatabaseElemant[] 
 }
 
 model AppUser {
@@ -40,6 +41,8 @@ model AppUser {
   app      App    @relation(fields: [appId], references: [id])
   appId    Int
 }
+
+
 
 model DatabaseElemant {
   id   Int         @id @default(autoincrement())
@@ -65,11 +68,12 @@ model DatabaseElemant {
   documentId Int?  @unique
   document   Document? @relation("ElementDocument", fields: [documentId], references: [id])
 
-  parentDoc Document?  @relation("ParentDoc", fields: [parentDocid], references: [id])
-  parentDocid Int?
+  parentId Int
+  parent DatabaseElemant  @relation("DatabaseElemantToDatabaseElemant", fields: [parentId], references: [id])
+  children DatabaseElemant[] @relation(name: "DatabaseElemantToDatabaseElemant")
 
-  parentQueriId Int?
-  parentQueri Query?    @relation("ParentQueri", fields: [parentQueriId], references: [id])
+  appId String
+  app App @relation(fields: [appId],references: [apikey])
 }
 
 model Str {
@@ -103,14 +107,12 @@ model Bool {
 
 model Query {
   id   Int    @id @default(autoincrement())
-  DatabaseElemant DatabaseElemant ? @relation("ElementQuery")
-  children DatabaseElemant[] @relation("ParentQueri")
+  DatabaseElemant DatabaseElemant? @relation("ElementQuery")
 }
 
 model Document{
     id   Int    @id @default(autoincrement())
     DatabaseElemant DatabaseElemant? @relation("ElementDocument")
-    children DatabaseElemant[] @relation("ParentDoc")
 }
 
 enum elementType {
