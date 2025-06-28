@@ -88,7 +88,7 @@ const signIn = async (data, res) => {
         const email = data.body.email
         const password = data.body.password
 
-        if (!email || !validateEmail(email)) {
+        if (!email || !utility.validateEmail(email)) {
             return res.status(400).json(
                 {
                     "status": "error",

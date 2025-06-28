@@ -2,7 +2,8 @@ const {PrismaClient} = require("@prisma/client")
 const argon2 = require("argon2")
 const jwt = require("jsonwebtoken")
 const prisma = new PrismaClient()
-const utility = require("../utilities")
+const utility = require("../../utilities")
+const { v4: uuidv4 } = require('uuid');
 
 
 const signUp = async (req,res)=>{
@@ -44,12 +45,14 @@ const signUp = async (req,res)=>{
             )
         } else {
             const hashed = await argon2.hash(password)
-
+            const uuid = uuidv4()
             const user = await prisma.appUser.create(
                 {
                     data : {
                         email: email,
-                        passwprd: hashed
+                        password: hashed,
+                        uuid : uuid,
+                        appId : app.id
                     }
                 }
             )
@@ -87,7 +90,11 @@ const signUp = async (req,res)=>{
 }
 
 const signIn =async (res,req)=>{
+    console.log(req.body);
+    
+
     const {apiKey,email,password} = req.body
+
         if (!apiKey || !email || !password || !utility.validateEmail(email)){
         return res.status(400).json(
             {

@@ -1,18 +1,27 @@
 const jwt = require("jsonwebtoken")
 
-const userMiddlewere = (req,res,next)=>{
-    try{
-    jwt.verify(req.headers["Authorazition"],process.env.JWT, { algorithms: ['RS256'] })
-    next()
-} catch(e){
-    return res.status(400).json(
-        {
-            "status" : "error",
-            "msg" : "ayth needed"        
+
+const userMiddlewere = (req, res, next) => {
+    try {
+        const authHeader = req.headers["authorization"];
+
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ status: "error", msg: "No token provided" });
         }
-    )
-}
-}
+
+        const token = authHeader.split(" ")[1];
+
+        // Use HS256 (default) unless you are using RSA keys
+        const decoded = jwt.verify(token, process.env.JWT); // remove algorithm option unless you're sure
+
+        next();
+
+    } catch (e) {
+        console.error("JWT verify failed:", e.message);
+        return res.status(401).json({ status: "error", msg: "Invalid or expired token" });
+    }
+};
+
 
 const validateEmail = (email,) => {
     return String(email)
@@ -23,4 +32,4 @@ const validateEmail = (email,) => {
 };
 
 
-module.exports = {userMiddlewere,validateEmail}
+module.exports = {userMiddlewere,validateEmail} 

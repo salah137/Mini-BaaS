@@ -15,9 +15,27 @@ const createApp =async (req,res)=>{
             }
         )
     }
+    const app = await prisma.app.findUnique(
+        {
+            where : {
+                appName : name,
+                ownrId : id
+            }
+        }
+    )
+
+    if (app){
+        return await res.status(400).json(
+            {
+                "status" : "error",
+                "msg" : "already used name"
+            }
+        )
+    }
 
     const apiKey = uuidv4()
     
+
     await prisma.app.create(
         {
             data : {
@@ -51,8 +69,14 @@ const deleteApp = async (req,res)=>{
             {
                 where : {
                     apikey : apikey,
-                    ownerId : id,
+                    ownrId : id,
                 }
+            }
+        )
+
+        return res.status(200).json(
+            {
+                "status" : "done"
             }
         )
 
@@ -82,7 +106,7 @@ const getAllApps =async (req,res)=>{
         const apps = await prisma.app.findMany(
             {
                 where : {
-                    ownerId : id
+                    ownrId : id
                 }
             }
         )

@@ -6,11 +6,22 @@ const prisma = new PrismaClient()
 
 const createQuery = async (req,res) => {
     try {
-    const {parentId,name} = req.body
+    const {parentId,name,apiKey} = req.body
+   
+    if (!apiKey){
+        return res.status(400).json(
+            {
+                "status": "error",
+                "msg" : "apiKey not givven"
+            }
+        )
+    }
+   
     if(parentId) {
         const parent = await prisma.databaseElemant.findUnique(
             {
                 where : {
+                    appId : apiKey,
                     id : parentId
                 }
             }
@@ -79,13 +90,15 @@ const createQuery = async (req,res) => {
     
 }
 }
+
 const createDocument = async (req,res) => {
     try{
-    const {parentId,name} = req.body
+    const {parentId,name, apiKey} = req.body
     if(parentId) {
         const parent = await prisma.databaseElemant.findUnique(
             {
                 where : {
+                    appId : apiKey,
                     id : parentId
                 }
             }
@@ -155,169 +168,68 @@ const createDocument = async (req,res) => {
     }
 }
 
-const makeDocumentFull = async (req,res)=>{
-    const {parentId,data} = req.body
-    const types = [
-        "Int",
-        "Bool",
-        "String",
-        "Float"
-    ]
+const makeDocumentFull = async (req, res) => {
+    const { parentId, data,apiKey } = req.body;
 
-    if(!parentId)  {
-        return res.status(400).json(
-            {
-                "status" :"error",
-                "msg" : "parent id should be given"
-            }
-        )
+    const VALID_TYPES = ["Int", "Bool", "String", "Float"];
+
+  // Validate input
+    if (!parentId) {
+        return res.status(400).json({ status: "error", msg: "Parent ID is required" });
     }
 
-    if(!data){
-        return res.status(400).json(
-            {
-                "status":"error",
-                "msg" : "no data given"
-            }
-        )
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+        return res.status(400).json({ status: "error", msg: "Data must be an object" });
     }
 
-    const keys = Object.keys(data)
+  // Check if parent exists and is a Document
+    const parent = await prisma.databaseElemant.findUnique({ where: { id: parentId } });
 
-    let valid = true 
+    if (!parent) {
+        return res.status(400).json({ status: "error", msg: "Parent element not found" });
+    }
 
-    keys.forEach(
-        (e,i)=>{
-            if (!(data[e][1] in types)) {
-                valid = false
-                return
-            }
+    if (parent.type !== "Document") {
+        return res.status(400).json({ status: "error", msg: "Parent must be a Document" });
+    }
+
+  // Validate data types
+    for (const [fieldName, [, type]] of Object.entries(data)) {
+        if (!VALID_TYPES.includes(type)) {
+            return res.status(400).json({
+                status: "error",
+                msg: `Invalid type "${type}" for field "${fieldName}"`,
+            });
         }
-    )
-
-    if (!valid){
-        return res.status(200).json(
-            {
-                "status" : "error",
-                "msg" : "invalid data"
-            }
-        )
-    }
-    const parent = await prisma.databaseElemant.findUnique(
-        {
-            where : {
-                id :parentId,
-
-            }
-        }
-    )
-
-    if (!parent){
-        return res.status(400).json(
-            {
-                "status":"error",
-                "msg" : "parent element not found"
-            }
-        )
     }
 
-    if(parent.type != "Document"){
-        return res.status(400).json(
-            {
-                "status":"error",
-                "msg" : "parent element should be a document"
-            }
-        )
+  // Insert each field
+    for (const [fieldName, [value, type]] of Object.entries(data)) {
+        let elementData = {
+        parentId,
+        type,
+        name: fieldName,
+    };
+
+    if (type === "Int") {
+        const int = await prisma.integer.create({ data: { value } });
+        elementData.intId = int.id;
+    } else if (type === "Float") {
+        const float = await prisma.floate.create({ data: { value } });
+        elementData.floatId = float.id;
+    } else if (type === "String") {
+        const str = await prisma.str.create({ data: { value } });
+        elementData.strId = str.id;
+    } else if (type === "Bool") {
+        const bool = await prisma.bool.create({ data: { value } });
+        elementData.boolId = bool.id;
     }
 
-    for(let i = 0; i<keys.length ;i++){
-        if (data[i][1] == "Int"){
-            const Int = await prisma.integer.create(
-                {
-                    data : {
-                        value : data[i][0]
-                    }
-                }
-            )
-
-            const element = await prisma.databaseElemant.create(
-                {
-                    data : {
-                        parentId : parentId,
-                        intId: Int.id,
-                        type : "Int"
-                    }
-                }
-            )
-
-    
-        }else if (data[i][1] == "Float"){
-            const float = await prisma.floate.create(
-                {
-                    data : {
-                        value : data[i][0]
-                    }
-                }
-            )
-
-            const element = await prisma.databaseElemant.create(
-                {
-                    data : {
-                        parentId : parentId,
-                        intId: float.id,
-                        type : "Float"
-                    }
-                }
-            )
-
-        }else if (data[i][1] == "String"){
-            const string = await prisma.str.create(
-                {
-                    data : {
-                        value : data[i][0]
-                    }
-                }
-            )
-
-            const element = await prisma.databaseElemant.create(
-                {
-                    data : {
-                        parentId : parentId,
-                        intId: string.id,
-                        type : "Int"
-                    }
-                }
-            )
-
-            
-        }else if (data[i][1] == "Bool"){
-            const bool = await prisma.bool.create(
-                {
-                    data : {
-                        value : data[i][0]
-                    }
-                }
-            )
-
-            const element = await prisma.databaseElemant.create(
-                {
-                    data : {
-                        parentId : parentId,
-                        intId: bool.id,
-                        type : "Int"
-                    }
-                }
-            )
-    
-        }
-
+        await prisma.databaseElemant.create({ data: elementData });
     }
-    return res.status(200).json(
-        {
-            "status" : "done"
-        }
-    )
-}
+
+    return res.status(200).json({ status: "done" });
+};
 
 const removeElement = async(req,res)=>{
     try{
@@ -337,6 +249,7 @@ const removeElement = async(req,res)=>{
                 }
             }
         )) {
+
         const remove =async ({id})=>{
             const element =await prisma.databaseElemant.findUnique(
                 {
@@ -376,3 +289,66 @@ const removeElement = async(req,res)=>{
         )
     } 
 }
+
+const readAllElement = async (req, res) => {
+    try {
+        const { apiKey, id } = req.body;
+        if (!apiKey) {
+            return res.status(400).json({ status: "error", message: "Missing apiKey" });
+        }
+
+    // Recursive function
+        const show = async (parentId) => {
+        const children = await prisma.databaseElemant.findMany({
+            where: { parentId: parentId,appId :apiKey },
+        });
+
+        const result = [];
+
+        for (const item of children) {
+            if (item.type === "Document" || item.type === "Query") {
+                const childNode = {
+                type: item.type,
+                name: item.name,
+                children: await show(item.id) // recurse!
+            };
+            result.push(childNode);
+        } else {
+            let value = null;
+
+            if (item.type === "Bool") {
+                const v = await prisma.bool.findUnique({ where: { id: item.id } });
+                value = v?.value;
+            } else if (item.type === "Float") {
+                const v = await prisma.floate.findUnique({ where: { id: item.id } });
+                value = v?.value;
+            } else if (item.type === "Int") {
+                const v = await prisma.integer.findUnique({ where: { id: item.id } });
+                value = v?.value;
+            } else if (item.type === "String") {
+                const v = await prisma.str.findUnique({ where: { id: item.id } });
+                value = v?.value;
+            }
+
+            result.push({
+                id: item.id,
+                type: item.type,
+                value
+            });
+        }
+    }
+
+    return result;
+    };
+
+    const tree = {
+        children: await show(id || null)
+    };
+        return res.status(200).json(tree);
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({ status: "server error", error: e.message });
+    }
+};
+
+module.exports = {createDocument,createQuery,makeDocumentFull,removeElement,readAllElement}

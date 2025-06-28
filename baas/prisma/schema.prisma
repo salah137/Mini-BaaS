@@ -25,9 +25,9 @@ model User {
 model App {
   id      Int    @id @default(autoincrement())
   apikey  String @unique
-  appName String
+  appName String @unique
   owner   User   @relation(fields: [ownrId], references: [id])
-  ownrId  Int    @unique
+  ownrId  Int    
   AppUser AppUser[]
 
   DatabaseElemant DatabaseElemant[] 
@@ -35,9 +35,9 @@ model App {
 
 model AppUser {
   id       Int    @id @default(autoincrement())
-  uuid     Int    @unique
+  uuid     String    @unique
   email    String @unique
-  passwprd String
+  password String
   app      App    @relation(fields: [appId], references: [id])
   appId    Int
 }

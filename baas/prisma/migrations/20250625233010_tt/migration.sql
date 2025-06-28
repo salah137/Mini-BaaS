@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "AppUser" ALTER COLUMN "uuid" SET DATA TYPE TEXT;

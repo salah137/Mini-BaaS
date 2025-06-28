@@ -7,3 +7,16 @@ Content-Type: application/json
     "email":"salah@gmail.com",
     "password":"salah2005"
 }
+
+df15624f-2ad0-47dd-9687-fdf39038121c => apikey
+eyJhbGciOiJIUzI1NiJ9.c2FsYWhAZXhhbXBsZS5jb20.7rmyDvAJF7F8HzAzW1o0LztHT9PSFbjOKuM6_ihhAlo => token
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InNhbGFoQGV4YW1wbGUuY29tIiwiYXBpS2V5IjoiZGYxNTYyNGYtMmFkMC00N2RkLTk2ODctZmRmMzkwMzgxMjFjIiwiaWF0IjoxNzUwOTM5NzAzfQ.D4Xu3d0LwVPLBS4Va9FDSaDODiseJkOCynAfQgKHRl0 => token app
+
+curl -X POST http://localhost:3000/app/auth/signin   
+  -H "Content-Type: application/json" \
+  -d '{
+    "email":"salah@example.com",
+    "apiKey":"df15624f-2ad0-47dd-9687-fdf39038121c",
+    "password":"securepassword"
+  }'
